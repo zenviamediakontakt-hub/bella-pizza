@@ -2,25 +2,21 @@ require("dotenv").config();
 
 const express = require("express");
 const path = require("path");
-const nodemailer = require("nodemailer");
 const rateLimit = require("express-rate-limit");
+const { Resend } = require("resend");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+
+// =========================
+// CONFIG
+// =========================
+
 app.set("trust proxy", 1);
 
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-    family: 4,
-
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
-});
 
 // =========================
 // MIDDLEWARE
@@ -36,7 +32,12 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static(path.join(__dirname, "public")));
 
-    const contactLimiter = rateLimit({
+
+// =========================
+// RATE LIMIT
+// =========================
+
+const contactLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     limit: 5,
 
@@ -48,15 +49,21 @@ app.use(express.static(path.join(__dirname, "public")));
         message: "Wysłano zbyt wiele wiadomości. Spróbuj ponownie później."
     }
 });
+
+
 // =========================
 // CONTACT API
 // =========================
 
 app.post("/api/contact", contactLimiter, async (req, res) => {
+
     let { name, email, message } = req.body;
 
 
-    // Sprawdzamy typ danych
+    // =========================
+    // WALIDACJA
+    // =========================
+
     if (
         typeof name !== "string" ||
         typeof email !== "string" ||
@@ -69,13 +76,11 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
     }
 
 
-    // Usuwamy zbędne spacje
     name = name.trim();
     email = email.trim();
     message = message.trim();
 
 
-    // Sprawdzamy puste pola
     if (!name || !email || !message) {
         return res.status(400).json({
             success: false,
@@ -84,7 +89,6 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
     }
 
 
-    // Walidacja imienia
     if (name.length < 2 || name.length > 50) {
         return res.status(400).json({
             success: false,
@@ -93,7 +97,6 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
     }
 
 
-    // Walidacja e-mail
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!emailRegex.test(email)) {
@@ -104,13 +107,13 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
     }
 
 
-    // Walidacja wiadomości
     if (message.length < 10) {
         return res.status(400).json({
             success: false,
             message: "Wiadomość musi mieć minimum 10 znaków."
         });
     }
+
 
     if (message.length > 2000) {
         return res.status(400).json({
@@ -120,20 +123,63 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
     }
 
 
-    // Na razie wyświetlamy wiadomość w terminalu
-    console.log("NOWA WIADOMOŚĆ:");
-    console.log({
-        name,
-        email,
-        message
-    });
+    // =========================
+    // RESEND
+    // =========================
+
+    try {
+
+        const { data, error } = await resend.emails.send({
+
+            from: "Bella Pizza <onboarding@resend.dev>",
+
+            to: [process.env.CONTACT_EMAIL],
+
+            replyTo: email,
+
+            subject: `Bella Pizza - wiadomość od ${name}`,
+
+            text: `
+Nowa wiadomość z formularza Bella Pizza
+
+Imię: ${name}
+E-mail: ${email}
+
+Wiadomość:
+${message}
+            `
+        });
 
 
-    // Odpowiedź do frontendu
-    return res.status(200).json({
-        success: true,
-        message: "Dziękujemy! Wiadomość została wysłana."
-    });
+        if (error) {
+
+            console.error("Błąd Resend:", error);
+
+            return res.status(500).json({
+                success: false,
+                message: "Nie udało się wysłać wiadomości."
+            });
+        }
+
+
+        console.log("Wiadomość wysłana:", data.id);
+
+
+        return res.status(200).json({
+            success: true,
+            message: "Dziękujemy! Wiadomość została wysłana."
+        });
+
+
+    } catch (error) {
+
+        console.error("Błąd wysyłania:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Nie udało się wysłać wiadomości."
+        });
+    }
 });
 
 
@@ -141,13 +187,6 @@ app.post("/api/contact", contactLimiter, async (req, res) => {
 // START SERWERA
 // =========================
 
-transporter.verify()
-    .then(() => {
-        console.log("Połączenie z Gmail działa!");
-    })
-    .catch((error) => {
-        console.error("Błąd Gmail:", error);
-    });
 app.listen(PORT, () => {
     console.log(`Serwer działa na http://localhost:${PORT}`);
 });
