@@ -1,80 +1,26 @@
-# 🍕 Bella Pizza
+🍕 BELLA PIZZA
 
-Responsywna strona internetowa fikcyjnej pizzerii stworzona jako projekt portfolio.
+[ ZOBACZ LIVE DEMO ]
 
-## 🌐 Demo
+krótki opis projektu
 
-Live demo: [Bella Pizza](https://bella-pizza-dopu.onrender.com)
+[Screenshot strony]
 
-## ✨ Funkcje
+CO ZROBIŁEM
+• responsywny frontend
+• formularz kontaktowy
+• backend Express
+• walidacja po stronie serwera
+• rate limiting
+• wysyłanie maili przez Resend
+• deployment
 
-- responsywny design
-- mobilna nawigacja
-- animacje podczas przewijania
-- formularz kontaktowy
-- walidacja danych po stronie serwera
-- REST API w Express
-- zabezpieczenie formularza przez rate limiting
-- wysyłanie wiadomości e-mail przez Resend API
+TECHNOLOGIE
+HTML / CSS / JavaScript / Node.js / Express / Resend
 
-## 🛠 Technologie
-
-- HTML5
-- CSS3
-- JavaScript
-- Node.js
-- Express.js
-- Resend
-- Git / GitHub
-- Render
-
-## 🚀 Uruchomienie lokalne
-
-Zainstaluj zależności:
-
-```bash
+URUCHOMIENIE LOKALNE
 npm install
-```
-
-Uruchom aplikację:
-
-```bash
 npm start
-```
 
-Aplikacja będzie dostępna pod adresem:
-
-```text
-http://localhost:3000
-```
-
-## 🔐 Zmienne środowiskowe
-
-Do poprawnego działania formularza kontaktowego utwórz lokalnie plik `.env`:
-
-```env
-RESEND_API_KEY=your_resend_api_key
-CONTACT_EMAIL=your_email@example.com
-```
-
-Plik `.env` zawiera prywatne dane i nie powinien być dodawany do repozytorium.
-
-## 📁 Struktura projektu
-
-```text
-bella-pizza/
-├── public/
-│   ├── index.html
-│   ├── style.css
-│   ├── script.js
-│   └── favicon.svg
-├── server.js
-├── package.json
-├── package-lock.json
-├── .gitignore
-└── README.md
-```
-
-## 📌 Informacja
-
-Bella Pizza jest fikcyjną restauracją stworzoną wyłącznie jako projekt demonstracyjny do portfolio.
+INFORMACJA
+Projekt demonstracyjny — fikcyjna restauracja.
