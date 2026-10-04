@@ -4,7 +4,7 @@
 
 krótki opis projektu
 
-[Screenshot strony]
+![Bella Pizza — podgląd strony](assets/preview.png)
 
 CO ZROBIŁEM
 • responsywny frontend
